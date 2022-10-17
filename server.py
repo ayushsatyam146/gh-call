@@ -29,20 +29,21 @@ class repo_star_data(BaseModel):
     org: str
 
 def sort_by_stars(list):
-    return list['stargazers_count']
-
-def get_github_data(org):
-    url = BASE_URL + "/orgs/" + org + "/repos"
-    org_repos = requests.get(url).json()
-    org_repos.sort(key=sort_by_stars, reverse=True)
-    return org_repos
+    return list['stars']
 
 @app.post("/repos")
 def main(data: repo_star_data ):
-    repos = get_github_data(data.org)
+    page_number = 1
     resp = []
-    for repo in repos:
-        resp.append({"name":repo['name'],"stars":repo['stargazers_count']}.copy())
+    while True:
+        url = BASE_URL + "/orgs/" + data.org + "/repos" + "?page=" + str(page_number)
+        org_repos = requests.get(url).json()
+        if len(org_repos) == 0:
+            break
+        for repo in org_repos:
+            resp.append({"name":repo['name'],"stars":repo['stargazers_count']}.copy())
+        page_number += 1
+    resp.sort(key=sort_by_stars, reverse=True)
     json_compatible_item_data = jsonable_encoder({"results":resp[:min(10,len(resp))]})
     return JSONResponse(content=json_compatible_item_data)
 
