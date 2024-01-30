@@ -86,7 +86,7 @@ deploy_on_openshift(){
 # 
 get_image_ready(){
     printf "\n-------------------------------------------------------\n>INFO || Pulling the Jenkins Image\n"
-    IMAGE_ID=$(docker pull --tls-verify=false "${JENKINS_IMAGE}")
+    IMAGE_ID=$(docker pull "${JENKINS_IMAGE}")
     if [ -z "${IMAGE_ID}" ]
     then
         printf "\n>ERR || Image Pull Failed\n"
