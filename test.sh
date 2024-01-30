@@ -86,15 +86,15 @@ deploy_on_openshift(){
 # 
 get_image_ready(){
     printf "\n-------------------------------------------------------\n>INFO || Pulling the Jenkins Image\n"
-    IMAGE_ID=$(podman pull --tls-verify=false "${JENKINS_IMAGE}")
+    IMAGE_ID=$(docker pull --tls-verify=false "${JENKINS_IMAGE}")
     if [ -z "${IMAGE_ID}" ]
     then
         printf "\n>ERR || Image Pull Failed\n"
         exit 1
     else
-        podman tag "${JENKINS_IMAGE}" "${QUAY_IMAGE}"
+        docker tag "${JENKINS_IMAGE}" "${QUAY_IMAGE}"
         printf "\n-------------------------------------------------------\n>INFO || Pushing the image to 'quay.io/pipeline-integrations'\n"
-        podman push "${QUAY_IMAGE}"
+        docker push "${QUAY_IMAGE}"
         printf "\n-------------------------------------------------------\n>INFO || Image %s pushed successful\n" "${QUAY_IMAGE}"
     fi
 
@@ -116,10 +116,10 @@ EOL
     # Run jenkins verification script inside the pod & redirect the output to a file.
     printf "\n-------------------------------------------------------\n>INFO || Running a container with image: %s\n" "${JENKINS_IMAGE}"
     # in case any container with same name exists, deletes the container.
-    podman rm "jenkins-$(hostname)" -f
-    podman run -dt --name="jenkins-$(hostname)" --entrypoint /bin/bash "${JENKINS_IMAGE}"
+    docker rm "jenkins-$(hostname)" -f
+    docker run -dt --name="jenkins-$(hostname)" --entrypoint /bin/bash "${JENKINS_IMAGE}"
     printf "\n-------------------------------------------------------\n>INFO || Executing the verify-jenkins.sh within the %s container (Takes ~100 seconds)\n" "jenkins-$(hostname)"
-    podman exec -i "jenkins-$(hostname)" bash -s < /tmp/download_script.sh &> /tmp/result.out &
+    docker exec -i "jenkins-$(hostname)" bash -s < /tmp/download_script.sh &> /tmp/result.out &
     for i in {1..100}
     do
         printf "."
